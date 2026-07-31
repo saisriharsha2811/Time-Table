@@ -353,7 +353,7 @@
 
   // ---- auth ----
   document.getElementById('google-signin').addEventListener('click', () => {
-    auth.signInWithRedirect(provider);
+    auth.signInWithPopup(provider).catch((error) => { console.error('Sign-in error:', error.code, error.message); alert('Sign-in failed: ' + error.code); });
   });
   document.getElementById('signout-btn').addEventListener('click', () => auth.signOut());
 
