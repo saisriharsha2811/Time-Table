@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Timetable</title>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+
+<style>
+  :root{
+    --bg: #0a0d11; --panel: #12161c; --panel2: #171c24; --line: #232a33;
+    --text: #e9edf1; --muted: #7c8794; --amber: #ffb454; --teal: #5fd0c0;
+    --violet: #a48cf0; --gold: #ffd76a;
+  }
+  *{ box-sizing: border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{
+    background:
+      radial-gradient(circle at 10% 0%, rgba(95,208,192,0.08), transparent 40%),
+      radial-gradient(circle at 95% 15%, rgba(164,140,240,0.07), transparent 45%), var(--bg);
+    background-image:
+      linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px),
+      radial-gradient(circle at 10% 0%, rgba(95,208,192,0.08), transparent 40%),
+      radial-gradient(circle at 95% 15%, rgba(164,140,240,0.07), transparent 45%);
+    background-size: 26px 26px, 26px 26px, auto, auto;
+    color: var(--text); font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    min-height:100vh; padding: 40px 18px 60px;
+  }
+  .mono{ font-family: "SFMono-Regular", Consolas, monospace; }
+  .wrap{ max-width: 900px; margin: 0 auto; }
+  .eyebrow{ font-family: "SFMono-Regular", Consolas, monospace; font-size: 12px; letter-spacing: 3px; color: var(--amber);
+    text-transform: uppercase; margin-bottom: 10px; display:flex; align-items:center; gap:8px; }
+  .eyebrow .chip{ width:6px; height:6px; border-radius:1px; background: var(--amber); box-shadow: 10px 0 0 var(--teal), 20px 0 0 var(--violet); }
+  h1{ font-size: clamp(28px, 5vw, 42px); font-weight: 700; letter-spacing: -0.5px; margin-bottom: 8px; }
+  .sub{ font-size: 14px; color: var(--muted); max-width: 540px; line-height:1.5; }
+
+  /* login screen */
+  #login-screen{ min-height: 70vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap: 22px; }
+  #login-screen h1{ font-size: 34px; }
+  .google-btn{
+    display:flex; align-items:center; gap: 12px; background: #fff; color:#1f1f1f; border:none;
+    border-radius: 10px; padding: 13px 26px; font-size: 15px; font-weight: 600; cursor:pointer;
+  }
+  .google-btn svg{ width:20px; height:20px; }
+  #app{ display:none; }
+
+  .topbar{ display:flex; align-items:center; justify-content:space-between; margin-bottom: 6px; flex-wrap: wrap; gap: 10px; }
+  .user-pill{ display:flex; align-items:center; gap:8px; background: var(--panel); border:1px solid var(--line);
+    border-radius: 30px; padding: 6px 14px 6px 6px; font-size: 13px; }
+  .user-pill img{ width: 26px; height:26px; border-radius:50%; }
+  .signout{ font-family:"SFMono-Regular", Consolas, monospace; font-size: 11px; color: var(--muted); background:none;
+    border:none; cursor:pointer; text-decoration: underline; margin-left: 6px; }
+
+  .circuit-hero{ margin: 22px 0 26px; height: 40px; width: 100%; }
+  .tabs{ display:inline-flex; background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+    padding: 4px; gap: 4px; margin-bottom: 24px; flex-wrap: wrap; }
+  .tab-btn{ font-family: "SFMono-Regular", Consolas, monospace; font-size: 12.5px; letter-spacing: 0.5px;
+    text-transform: uppercase; color: var(--muted); background: transparent; border: none;
+    padding: 9px 18px; border-radius: 9px; cursor: pointer; transition: all 0.2s ease; }
+  .tab-btn.active{ background: var(--panel2); color: var(--text); box-shadow: inset 0 0 0 1px var(--line); }
+  .tab-btn:not(.active):hover{ color: var(--text); }
+
+  .week-strip{ display:flex; justify-content: space-between; margin-bottom: 26px; background: var(--panel);
+    border: 1px solid var(--line); border-radius: 14px; padding: 14px 12px; max-width: 480px; }
+  .day-chip{ display:flex; flex-direction:column; align-items:center; gap:6px; font-family: "SFMono-Regular", Consolas, monospace;
+    font-size: 10.5px; color: var(--muted); }
+  .day-chip .d{ width:9px; height:9px; border-radius:50%; }
+  .day-chip.g .d{ background: var(--amber); box-shadow: 0 0 8px rgba(255,180,84,0.6); }
+  .day-chip.s .d{ background: var(--teal); box-shadow: 0 0 8px rgba(95,208,192,0.6); }
+
+  .section-title{ font-size: 12.5px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted);
+    margin: 30px 0 14px; display:flex; align-items:center; gap:10px; }
+  .section-title::after{ content:""; flex:1; height:1px; background: var(--line); }
+
+  .task-grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+  .task-box{ position: relative; background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+    padding: 18px 18px 16px; cursor: pointer; transition: transform 0.15s ease, border-color 0.15s ease; overflow: hidden; }
+  .task-box:hover{ transform: translateY(-2px); border-color: var(--accent, var(--teal)); }
+  .task-box::before{ content:""; position:absolute; top:0; left:0; right:0; height: 3px; background: var(--accent, var(--teal)); opacity: 0.85; }
+  .task-box.gym{ --accent: var(--amber); } .task-box.study{ --accent: var(--teal); } .task-box.lib{ --accent: var(--violet); }
+  .task-box.gate{ --accent: var(--amber); } .task-box.skill{ --accent: var(--teal); } .task-box.custom{ --accent: var(--violet); }
+  .box-top{ display:flex; align-items:flex-start; justify-content:space-between; margin-bottom: 14px; }
+  .icon-box{ width: 40px; height: 40px; border-radius: 11px; background: var(--panel2); border: 1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size: 19px; }
+  .checkbox{ width: 22px; height: 22px; border-radius: 6px; border: 1.5px solid var(--line); display:flex;
+    align-items:center; justify-content:center; transition: all 0.15s ease; flex-shrink: 0; }
+  .checkbox svg{ opacity:0; transition: opacity 0.15s ease; width:13px; height:13px; }
+  .task-box.done .checkbox{ background: var(--accent, var(--teal)); border-color: var(--accent, var(--teal)); }
+  .task-box.done .checkbox svg{ opacity:1; }
+  .task-box.done .label{ color: var(--muted); text-decoration: line-through; text-decoration-color: var(--line); }
+  .task-box.done{ opacity: 0.7; }
+  .time{ font-family: "SFMono-Regular", Consolas, monospace; font-size: 12.5px; color: var(--muted); margin-bottom: 4px; }
+  .label{ font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+  .tag{ display:inline-block; font-family: "SFMono-Regular", Consolas, monospace; font-size: 10.5px; padding: 3px 8px;
+    border-radius: 6px; background: rgba(255,255,255,0.06); color: var(--muted); }
+  .tag.amb{ background: rgba(255,180,84,0.14); color: var(--amber); }
+  .tag.tl{ background: rgba(95,208,192,0.14); color: var(--teal); }
+
+  .panel{ display:none; } .panel.active{ display:block; }
+  .holiday-box{ background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--violet);
+    border-radius: 14px; padding: 20px 22px; position: relative; overflow: hidden; max-width: 480px; }
+  .holiday-box .glow{ position:absolute; right:-30px; top:-30px; width:140px; height:140px;
+    background: radial-gradient(circle, rgba(164,140,240,0.18), transparent 70%); }
+  .rotate-note{ font-size: 12px; color: var(--muted); font-family: "SFMono-Regular", Consolas, monospace; position: relative; }
+
+  .challenge-card{ position:relative; background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+    padding: 18px; cursor:pointer; transition: transform 0.15s ease, border-color 0.15s ease; }
+  .challenge-card:hover{ transform: translateY(-2px); border-color: var(--teal); }
+  .challenge-card .cname{ font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+  .challenge-card .cmeta{ font-size: 12px; color: var(--muted); font-family:"SFMono-Regular", Consolas, monospace; margin-bottom:12px; }
+  .mini-ring{ width: 34px; height:34px; border-radius:50%; background: conic-gradient(var(--teal) calc(var(--p,0)*1%), var(--line) 0);
+    display:flex; align-items:center; justify-content:center; position:absolute; top:16px; right:16px; }
+  .mini-ring-inner{ width:26px; height:26px; border-radius:50%; background:var(--panel); font-size:9px;
+    font-family:"SFMono-Regular", Consolas, monospace; display:flex; align-items:center; justify-content:center; }
+  .add-card{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px;
+    border: 1.5px dashed var(--line); color: var(--muted); font-family:"SFMono-Regular", Consolas, monospace; font-size: 13px; min-height: 96px; }
+  .add-card:hover{ border-color: var(--teal); color: var(--text); }
+  .add-card .plus{ font-size: 22px; }
+  .back-btn{ font-family:"SFMono-Regular", Consolas, monospace; font-size: 12px; color: var(--muted);
+    background:none; border:none; cursor:pointer; margin-bottom: 18px; display:flex; align-items:center; gap:6px; }
+  .back-btn:hover{ color: var(--text); }
+
+  .lb-progress{ display:flex; align-items:center; gap:12px; margin-bottom: 22px; background: var(--panel);
+    border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; max-width: 480px; }
+  .lb-progress .ring{ width: 46px; height:46px; border-radius: 50%; flex-shrink:0;
+    background: conic-gradient(var(--teal) calc(var(--pct,0) * 1%), var(--line) 0); display:flex; align-items:center; justify-content:center; }
+  .lb-progress .ring-inner{ width: 36px; height:36px; border-radius:50%; background: var(--panel); display:flex;
+    align-items:center; justify-content:center; font-size:11px; font-family:"SFMono-Regular", Consolas, monospace; }
+  .lb-progress .txt{ font-size: 13px; color: var(--muted); }
+  .lb-progress .txt b{ color: var(--text); }
+  .lb-list{ list-style:none; max-width: 560px; display:flex; flex-direction:column; gap:10px; }
+  .lb-row{ display:flex; align-items:center; gap: 14px; background: var(--panel); border: 1px solid var(--line);
+    border-radius: 12px; padding: 12px 16px; }
+  .lb-row.me{ border-color: var(--teal); }
+  .lb-row.first{ border-color: var(--gold); background: linear-gradient(90deg, rgba(255,215,106,0.08), var(--panel)); }
+  .lb-rank{ font-family: "SFMono-Regular", Consolas, monospace; font-size: 14px; color: var(--muted); width: 22px; text-align:center; flex-shrink:0; }
+  .lb-row.first .lb-rank{ color: var(--gold); }
+  .lb-name{ flex:1; font-size: 15px; font-weight: 600; display:flex; align-items:center; gap:8px; }
+  .lb-name .you-tag{ font-family:"SFMono-Regular", Consolas, monospace; font-size:10px; color: var(--teal); border:1px solid var(--teal); border-radius:5px; padding:1px 6px; }
+  .lb-crown{ font-size: 15px; }
+  .lb-count{ font-family: "SFMono-Regular", Consolas, monospace; font-size: 13px; color: var(--muted); }
+  .lb-bar{ width: 70px; height: 6px; border-radius: 4px; background: var(--line); overflow:hidden; flex-shrink:0; }
+  .lb-bar-fill{ height:100%; background: var(--teal); }
+  .lb-row.first .lb-bar-fill{ background: var(--gold); }
+  .lb-empty{ font-size: 13px; color: var(--muted); padding: 20px 0; }
+
+  .material-card{ background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px;
+    display:flex; align-items:center; justify-content:space-between; gap: 12px; margin-bottom: 10px; max-width: 620px; }
+  .material-card a{ color: var(--teal); font-size: 15px; font-weight: 600; text-decoration:none; }
+  .material-card .m-meta{ font-size: 11.5px; color: var(--muted); font-family:"SFMono-Regular", Consolas, monospace; margin-top: 3px; }
+  .material-form{ display:flex; flex-direction:column; gap: 10px; max-width: 420px; background: var(--panel);
+    border: 1px solid var(--line); border-radius: 14px; padding: 18px; margin-bottom: 24px; }
+  .material-form input{ background: var(--panel2); border: 1px solid var(--line); border-radius: 9px; padding: 10px 12px;
+    color: var(--text); font-size: 14px; outline:none; font-family: inherit; }
+  .material-form input:focus{ border-color: var(--teal); }
+  .material-form button{ background: var(--violet); color: #0a0d11; border:none; border-radius: 9px; padding: 10px 12px;
+    font-weight: 700; font-size: 14px; cursor:pointer; }
+
+  .refresh-btn{ font-family: "SFMono-Regular", Consolas, monospace; font-size: 11.5px; color: var(--muted);
+    background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 7px 14px; cursor: pointer; margin-bottom: 16px; }
+  .refresh-btn:hover{ color: var(--text); border-color: var(--teal); }
+  .footer-note{ margin-top: 40px; font-size: 12px; color: var(--muted); display:flex; align-items:center; gap:8px; }
+  .footer-note::before{ content:""; height:1px; width: 24px; background: var(--line); }
+
+  .modal-overlay{ position: fixed; inset:0; background: rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center;
+    z-index: 50; padding: 20px; }
+  .modal-overlay.hidden{ display:none; }
+  .modal{ background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 28px; max-width: 380px; width:100%; }
+  .modal h2{ font-size: 18px; margin-bottom: 8px; }
+  .modal p{ font-size: 12.5px; color: var(--muted); line-height:1.5; margin-bottom: 16px; }
+  .modal input, .modal textarea{ width:100%; background: var(--panel2); border: 1px solid var(--line); border-radius: 9px;
+    padding: 10px 12px; color: var(--text); font-size: 14px; margin-bottom: 14px; outline:none; font-family: inherit; }
+  .modal textarea{ resize: vertical; min-height: 90px; }
+  .modal input:focus, .modal textarea:focus{ border-color: var(--teal); }
+  .modal label{ font-size: 11.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; display:block; margin-bottom: 6px; }
+  .modal button{ width:100%; background: var(--teal); color: #0a0d11; border:none; border-radius: 9px;
+    padding: 10px 12px; font-weight: 700; font-size: 14px; cursor:pointer; }
+  .modal .cancel{ background: transparent; color: var(--muted); margin-top: 8px; }
+</style>
+</head>
+<body>
+
+  <!-- LOGIN -->
+  <div id="login-screen">
+    <div class="eyebrow"><span class="chip"></span>Personal Schedule</div>
+    <h1>Student Timetable</h1>
+    <div class="sub">Sign in with Google to track your daily tasks, join challenges with friends, and share GATE materials.</div>
+    <button class="google-btn" id="google-signin">
+      <svg viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.9 32.3 29.4 35 24 35c-6.1 0-11-4.9-11-11s4.9-11 11-11c2.8 0 5.3 1 7.3 2.7l6-6C33.6 6.1 29 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 16 19 13 24 13c2.8 0 5.3 1 7.3 2.7l6-6C33.6 6.1 29 4 24 4c-7.6 0-14.1 4.3-17.4 10.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.5 26.7 36 24 36c-5.3 0-9.8-3.4-11.4-8.1l-6.5 5C9.6 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-1 2.9-3 5.3-5.6 6.9l6.2 5.2C39.6 37.4 44 31.4 44 24c0-1.2-.1-2.4-.4-3.5z"/></svg>
+      Sign in with Google
+    </button>
+  </div>
+
+  <!-- APP -->
+  <div id="app">
+    <div class="wrap">
+      <div class="topbar">
+        <div>
+          <div class="eyebrow"><span class="chip"></span>Personal Schedule</div>
+          <h1 style="font-size:28px;">Timetable</h1>
+        </div>
+        <div class="user-pill">
+          <img id="user-photo" src="" alt="">
+          <span id="user-name"></span>
+          <button class="signout" id="signout-btn">sign out</button>
+        </div>
+      </div>
+      <div class="sub">Check off tasks — they reset next day. Join the College Tasks leaderboard, start challenges, or drop GATE materials for each other.</div>
+
+      <svg class="circuit-hero" viewBox="0 0 900 40" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+        <path d="M0 20 H140 L160 6 H360 L380 20 H600 L620 34 H760 L780 20 H900" stroke="#232a33" stroke-width="2"/>
+        <path d="M0 20 H140 L160 6 H360" stroke="#ffb454" stroke-width="2" opacity="0.8"/>
+        <path d="M360 6 L380 20 H600" stroke="#5fd0c0" stroke-width="2" opacity="0.8"/>
+        <path d="M600 20 L620 34 H760 L780 20 H900" stroke="#a48cf0" stroke-width="2" opacity="0.8"/>
+        <circle cx="160" cy="6" r="4" fill="#ffb454"/><circle cx="380" cy="20" r="4" fill="#5fd0c0"/>
+        <circle cx="620" cy="34" r="4" fill="#5fd0c0"/><circle cx="780" cy="20" r="4" fill="#a48cf0"/>
+      </svg>
+
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="college">College Days</button>
+        <button class="tab-btn" data-tab="holiday">Holidays</button>
+        <button class="tab-btn" data-tab="challenges">Challenges</button>
+        <button class="tab-btn" data-tab="materials">GATE Materials</button>
+      </div>
+
+      <!-- COLLEGE DAYS -->
+      <div class="panel active" id="panel-college">
+        <div class="week-strip">
+          <div class="day-chip g"><span class="d"></span>MON</div><div class="day-chip s"><span class="d"></span>TUE</div>
+          <div class="day-chip g"><span class="d"></span>WED</div><div class="day-chip s"><span class="d"></span>THU</div>
+          <div class="day-chip g"><span class="d"></span>FRI</div><div class="day-chip s"><span class="d"></span>SAT</div>
+        </div>
+        <div class="section-title">Morning</div>
+        <div class="task-grid">
+          <div class="task-box gym" data-task="gym">
+            <div class="box-top"><div class="icon-box">🏋️</div><div class="checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M4 12l6 6L20 6" stroke="#0a0d11" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+            <div class="time">06:00 – 07:00 AM</div><div class="label">Gym</div>
+          </div>
+          <div class="task-box study" data-task="study">
+            <div class="box-top"><div class="icon-box">📘</div><div class="checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M4 12l6 6L20 6" stroke="#0a0d11" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+            <div class="time">07:00 – 08:00 AM</div><div class="label">Study work</div>
+          </div>
+        </div>
+        <div class="section-title">During college</div>
+        <div class="task-grid">
+          <div class="task-box lib" data-task="lib">
+            <div class="box-top"><div class="icon-box">📚</div><div class="checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M4 12l6 6L20 6" stroke="#0a0d11" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+            <div class="time">Anytime in college</div><div class="label">Library</div><span class="tag tl">min. 1 hour</span>
+          </div>
+        </div>
+        <div class="section-title">Evening</div>
+        <div class="task-grid">
+          <div class="task-box gate" data-task="gate">
+            <div class="box-top"><div class="icon-box">🎯</div><div class="checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M4 12l6 6L20 6" stroke="#0a0d11" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+            <div class="time">09:40 – 10:40 PM</div><div class="label">GATE prep</div><span class="tag amb">Mon · Wed · Fri</span>
+          </div>
+          <div class="task-box skill" data-task="skill">
+            <div class="box-top"><div class="icon-box">🛠️</div><div class="checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M4 12l6 6L20 6" stroke="#0a0d11" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+            <div class="time">09:40 – 10:40 PM</div><div class="label">Skill improvement</div><span class="tag tl">Tue · Thu · Sat</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- HOLIDAYS -->
+      <div class="panel" id="panel-holiday">
+        <div class="section-title">Rotate through the day</div>
+        <div class="task-grid">
+          <div class="task-box gate" data-task="h-gate">
+            <div class="box-top"><div class="icon-box">🎯</div><div class="checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M4 12l6 6L20 6" stroke="#0a0d11" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+            <div class="time">Flexible</div><div class="label">GATE prep</div>
+          </div>
+          <div class="task-box study" data-task="h-study">
+            <div class="box-top"><div class="icon-box">📘</div><div class="checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M4 12l6 6L20 6" stroke="#0a0d11" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+            <div class="time">Flexible</div><div class="label">Study work</div>
+          </div>
+          <div class="task-box skill" data-task="h-skill">
+            <div class="box-top"><div class="icon-box">🛠️</div><div class="checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M4 12l6 6L20 6" stroke="#0a0d11" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+            <div class="time">Flexible</div><div class="label">Skill improvement</div>
+          </div>
+        </div>
+        <div class="holiday-box" style="margin-top:22px;"><div class="glow"></div>
+          <div class="rotate-note">// holiday tasks are personal only — not counted on any leaderboard</div>
+        </div>
+      </div>
+
+      <!-- CHALLENGES -->
+      <div class="panel" id="panel-challenges">
+        <div id="challenge-list-view">
+          <div class="section-title">Active challenges</div>
+          <div class="task-grid" id="challenge-grid"></div>
+        </div>
+        <div id="challenge-detail-view" style="display:none;">
+          <button class="back-btn" id="c-back">← all challenges</button>
+          <div class="section-title" id="c-detail-title">Challenge</div>
+          <div id="c-detail-tasks" class="task-grid" style="margin-bottom: 26px;"></div>
+          <div class="lb-progress">
+            <div class="ring" id="lb-ring" style="--pct:0"><div class="ring-inner" id="lb-ring-text">0/0</div></div>
+            <div class="txt">Your progress today<br><b id="lb-my-status">0 of 0 tasks done</b></div>
+          </div>
+          <ul class="lb-list" id="lb-list"><li class="lb-empty">Loading rankings…</li></ul>
+        </div>
+      </div>
+
+      <!-- MATERIALS -->
+      <div class="panel" id="panel-materials">
+        <div class="section-title">Add a material</div>
+        <div class="material-form">
+          <label class="mono" style="font-size:11px;color:var(--muted);">TITLE</label>
+          <input type="text" id="mat-title" placeholder="e.g. Signals & Systems notes">
+          <label class="mono" style="font-size:11px;color:var(--muted);">LINK (Drive, PDF, etc.)</label>
+          <input type="text" id="mat-url" placeholder="https://...">
+          <button id="mat-add">Add material</button>
+        </div>
+        <div class="section-title">Shared materials</div>
+        <div id="materials-list"></div>
+      </div>
+
+    </div>
+  </div>
+
+<script>
+  // ---- Firebase config ----
+  const firebaseConfig = {
+    apiKey: "AIzaSyBkaaQdfBsRKjbipuqwZNzFm57g0xujyK0",
+    authDomain: "student-timetable-69a5c.firebaseapp.com",
+    projectId: "student-timetable-69a5c",
+    storageBucket: "student-timetable-69a5c.firebasestorage.app",
+    messagingSenderId: "577429768174",
+    appId: "1:577429768174:web:8a34fbb721069d40bd70ff"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+  const provider = new firebase.auth.GoogleAuthProvider();
+
+  const COLLEGE_TASKS = ['gym','study','lib','gate','skill'];
+
+  function todayKey(){
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+  const today = todayKey();
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function slug(s){
+    return s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'').slice(0,24) + '-' + Date.now().toString(36).slice(-4);
+  }
+
+  // ---- auth ----
+  document.getElementById('google-signin').addEventListener('click', () => {
+    auth.signInWithRedirect(provider);
+  });
+  document.getElementById('signout-btn').addEventListener('click', () => auth.signOut());
+
+  let currentUser = null;
+  let progress = { date: today, byChallenge: {} };
+  let progressRef = null;
+
+  auth.onAuthStateChanged(async (user) => {
+    if(user){
+      currentUser = user;
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      document.getElementById('user-photo').src = user.photoURL || '';
+      document.getElementById('user-name').textContent = user.displayName || user.email;
+      await loadProgress();
+      applyCollegeCheckedToDOM();
+      applyHolidayCheckedToDOM();
+      loadChallenges();
+      loadMaterials();
+      await updateLeaderboardEntry('college', COLLEGE_TASKS.length);
+    } else {
+      document.getElementById('login-screen').style.display = 'flex';
+      document.getElementById('app').style.display = 'none';
+    }
+  });
+
+  // ---- progress (personal doc per user) ----
+  async function loadProgress(){
+    progressRef = db.collection('progress').doc(currentUser.uid);
+    const snap = await progressRef.get();
+    if(snap.exists){
+      const data = snap.data();
+      progress = (data.date === today) ? data : { date: today, byChallenge: {} };
+    } else {
+      progress = { date: today, byChallenge: {} };
+    }
+    await progressRef.set(progress);
+  }
+  async function saveProgress(){ await progressRef.set(progress); }
+  function checkedFor(id){ return (progress.byChallenge && progress.byChallenge[id]) || []; }
+
+  function applyCollegeCheckedToDOM(){
+    document.querySelectorAll('#panel-college [data-task]').forEach(box => {
+      box.classList.toggle('done', checkedFor('college').includes(box.getAttribute('data-task')));
+    });
+  }
+  function applyHolidayCheckedToDOM(){
+    document.querySelectorAll('#panel-holiday [data-task]').forEach(box => {
+      box.classList.toggle('done', checkedFor('holiday').includes(box.getAttribute('data-task')));
+    });
+  }
+
+  async function toggleTask(challengeId, taskId, totalTasks){
+    const list = progress.byChallenge[challengeId] ? [...progress.byChallenge[challengeId]] : [];
+    const idx = list.indexOf(taskId);
+    if(idx >= 0) list.splice(idx,1); else list.push(taskId);
+    progress.byChallenge[challengeId] = list;
+    await saveProgress();
+    if(totalTasks) await updateLeaderboardEntry(challengeId, totalTasks);
+  }
+
+  document.querySelectorAll('#panel-college [data-task]').forEach(box => {
+    box.addEventListener('click', async () => {
+      const id = box.getAttribute('data-task');
+      box.classList.toggle('done');
+      await toggleTask('college', id, COLLEGE_TASKS.length);
+      if(currentChallengeId === 'college') openChallengeDetail('college');
+    });
+  });
+  document.querySelectorAll('#panel-holiday [data-task]').forEach(box => {
+    box.addEventListener('click', async () => {
+      const id = box.getAttribute('data-task');
+      box.classList.toggle('done');
+      await toggleTask('holiday', id, null);
+    });
+  });
+
+  // ---- leaderboard entries ----
+  async function updateLeaderboardEntry(challengeId, totalTasks){
+    const completed = checkedFor(challengeId).length;
+    const allDone = completed === totalTasks;
+    const ref = db.collection('entries').doc(challengeId + '_' + today + '_' + currentUser.uid);
+    const snap = await ref.get();
+    const prev = snap.exists ? snap.data() : {};
+    const wasAllDone = prev.allDone;
+    await ref.set({
+      challengeId, date: today, uid: currentUser.uid,
+      name: currentUser.displayName || currentUser.email,
+      photoURL: currentUser.photoURL || '',
+      completed, total: totalTasks, allDone,
+      finishedAt: (allDone && !wasAllDone) ? Date.now() : (prev.finishedAt || null)
+    });
+  }
+
+  let unsubLeaderboard = null;
+  function renderLeaderboard(challengeId){
+    if(unsubLeaderboard) unsubLeaderboard();
+    const list = document.getElementById('lb-list');
+    unsubLeaderboard = db.collection('entries')
+      .where('challengeId','==',challengeId)
+      .where('date','==',today)
+      .onSnapshot(qs => {
+        const entries = [];
+        qs.forEach(doc => entries.push(doc.data()));
+        if(!entries.length){
+          list.innerHTML = '<li class="lb-empty">No one has started today yet — be the first.</li>';
+          return;
+        }
+        entries.sort((a,b) => {
+          if(a.allDone && b.allDone) return (a.finishedAt||0) - (b.finishedAt||0);
+          if(a.allDone) return -1;
+          if(b.allDone) return 1;
+          return b.completed - a.completed;
+        });
+        list.innerHTML = '';
+        entries.forEach((e,i) => {
+          const li = document.createElement('li');
+          li.className = 'lb-row' + (i===0?' first':'') + (e.uid===currentUser.uid?' me':'');
+          const pct = Math.round((e.completed/e.total)*100);
+          li.innerHTML = `
+            <div class="lb-rank">${i+1}</div>
+            <div class="lb-name">${i===0 && e.allDone ? '<span class="lb-crown">👑</span>' : ''}${escapeHtml(e.name)}${e.uid===currentUser.uid?'<span class="you-tag">YOU</span>':''}</div>
+            <div class="lb-bar"><div class="lb-bar-fill" style="width:${pct}%"></div></div>
+            <div class="lb-count">${e.completed}/${e.total}</div>`;
+          list.appendChild(li);
+        });
+      });
+  }
+
+  // ---- tabs ----
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('panel-' + btn.getAttribute('data-tab')).classList.add('active');
+      if(btn.getAttribute('data-tab') === 'challenges') showChallengeList();
+    });
+  });
+
+  // ---- challenges ----
+  let challenges = [{ id: 'college', name: 'College Tasks', builtin: true, tasks: COLLEGE_TASKS.map(t=>({id:t,label:t})) }];
+  let currentChallengeId = null;
+
+  function loadChallenges(){
+    db.collection('challenges').onSnapshot(qs => {
+      const custom = [];
+      qs.forEach(doc => custom.push({ id: doc.id, ...doc.data() }));
+      challenges = [
+        { id: 'college', name: 'College Tasks', builtin: true, tasks: COLLEGE_TASKS.map(t=>({id:t,label:t})) },
+        ...custom
+      ];
+      if(document.getElementById('panel-challenges').classList.contains('active')
+         && document.getElementById('challenge-list-view').style.display !== 'none'){
+        showChallengeList();
+      }
+    });
+  }
+
+  function showChallengeList(){
+    document.getElementById('challenge-detail-view').style.display = 'none';
+    document.getElementById('challenge-list-view').style.display = 'block';
+    const grid = document.getElementById('challenge-grid');
+    grid.innerHTML = '';
+    challenges.forEach(c => {
+      const n = checkedFor(c.id).length;
+      const total = c.tasks.length;
+      const pct = total ? Math.round((n/total)*100) : 0;
+      const card = document.createElement('div');
+      card.className = 'challenge-card';
+      card.innerHTML = `
+        <div class="mini-ring" style="--p:${pct}"><div class="mini-ring-inner">${n}/${total}</div></div>
+        <div class="cname">${escapeHtml(c.name)}</div>
+        <div class="cmeta">${total} task${total===1?'':'s'} · tap to open</div>`;
+      card.addEventListener('click', () => openChallengeDetail(c.id));
+      grid.appendChild(card);
+    });
+    const addCard = document.createElement('div');
+    addCard.className = 'challenge-card add-card';
+    addCard.innerHTML = `<div class="plus">+</div><div>New challenge</div>`;
+    addCard.addEventListener('click', () => { document.getElementById('challenge-modal').classList.remove('hidden'); });
+    grid.appendChild(addCard);
+  }
+
+  function openChallengeDetail(challengeId){
+    currentChallengeId = challengeId;
+    const c = challenges.find(x => x.id === challengeId);
+    if(!c) return;
+    document.getElementById('challenge-list-view').style.display = 'none';
+    document.getElementById('challenge-detail-view').style.display = 'block';
+    document.getElementById('c-detail-title').textContent = c.name;
+    const taskWrap = document.getElementById('c-detail-tasks');
+    if(c.builtin){
+      taskWrap.innerHTML = `<div class="holiday-box" style="grid-column:1/-1;"><div class="glow"></div>
+        <div class="rotate-note">// check these off from the College Days tab — they feed this leaderboard automatically</div></div>`;
+    } else {
+      taskWrap.innerHTML = '';
+      c.tasks.forEach(t => {
+        const box = document.createElement('div');
+        const isDone = checkedFor(c.id).includes(t.id);
+        box.className = 'task-box custom' + (isDone ? ' done' : '');
+        box.innerHTML = `
+          <div class="box-top"><div class="icon-box">📌</div>
+            <div class="checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M4 12l6 6L20 6" stroke="#0a0d11" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+          <div class="label">${escapeHtml(t.label)}</div>`;
+        box.addEventListener('click', async () => {
+          box.classList.toggle('done');
+          await toggleTask(c.id, t.id, c.tasks.length);
+          updateRing(c.id, c.tasks.length);
+        });
+        taskWrap.appendChild(box);
+      });
+    }
+    updateRing(c.id, c.tasks.length);
+    updateLeaderboardEntry(c.id, c.tasks.length).then(() => renderLeaderboard(c.id));
+  }
+
+  function updateRing(challengeId, total){
+    const n = checkedFor(challengeId).length;
+    const pct = total ? Math.round((n/total)*100) : 0;
+    document.getElementById('lb-ring').style.setProperty('--pct', pct);
+    document.getElementById('lb-ring-text').textContent = n + '/' + total;
+    document.getElementById('lb-my-status').textContent = n + ' of ' + total + ' tasks done';
+  }
+
+  document.getElementById('c-back').addEventListener('click', showChallengeList);
+
+  const cModal = document.getElementById('challenge-modal');
+  document.getElementById('c-cancel').addEventListener('click', () => cModal.classList.add('hidden'));
+  document.getElementById('c-create').addEventListener('click', async () => {
+    const name = document.getElementById('c-name').value.trim();
+    const rawTasks = document.getElementById('c-tasks').value.split('\n').map(s=>s.trim()).filter(Boolean);
+    if(!name || !rawTasks.length) return;
+    const tasks = rawTasks.map((label,i) => ({ id: 'task-'+i, label }));
+    await db.collection('challenges').doc(slug(name)).set({ name, tasks, createdBy: currentUser.uid });
+    document.getElementById('c-name').value = '';
+    document.getElementById('c-tasks').value = '';
+    cModal.classList.add('hidden');
+  });
+
+  // ---- materials ----
+  function loadMaterials(){
+    db.collection('materials').orderBy('addedAt','desc').onSnapshot(qs => {
+      const wrap = document.getElementById('materials-list');
+      if(qs.empty){ wrap.innerHTML = '<div class="lb-empty">No materials shared yet.</div>'; return; }
+      wrap.innerHTML = '';
+      qs.forEach(doc => {
+        const m = doc.data();
+        const card = document.createElement('div');
+        card.className = 'material-card';
+        card.innerHTML = `
+          <div><a href="${escapeHtml(m.url)}" target="_blank" rel="noopener">${escapeHtml(m.title)}</a>
+            <div class="m-meta">added by ${escapeHtml(m.addedByName || 'someone')}</div></div>`;
+        wrap.appendChild(card);
+      });
+    });
+  }
+  document.getElementById('mat-add').addEventListener('click', async () => {
+    const title = document.getElementById('mat-title').value.trim();
+    const url = document.getElementById('mat-url').value.trim();
+    if(!title || !url) return;
+    await db.collection('materials').add({
+      title, url, addedBy: currentUser.uid, addedByName: currentUser.displayName || currentUser.email,
+      addedAt: Date.now()
+    });
+    document.getElementById('mat-title').value = '';
+    document.getElementById('mat-url').value = '';
+  });
+</script>
+
+<div class="modal-overlay hidden" id="challenge-modal">
+  <div class="modal">
+    <h2>New challenge</h2>
+    <p>Give it a name and list the tasks (one per line). Visible to everyone using this site.</p>
+    <label>Challenge name</label>
+    <input type="text" id="c-name" placeholder="e.g. No-Sugar Week" maxlength="30">
+    <label>Tasks (one per line)</label>
+    <textarea id="c-tasks" placeholder="Drink 2L water&#10;30 min walk&#10;No sugar after 6pm"></textarea>
+    <button id="c-create">Create challenge</button>
+    <button class="cancel" id="c-cancel">Cancel</button>
+  </div>
+</div>
+
+</body>
+</html>
