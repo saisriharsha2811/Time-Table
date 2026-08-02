@@ -769,15 +769,13 @@ function renderAllStreakBadges(){ STREAK_TASK_IDS.forEach(renderStreakBadge); }
 // ---- GATE syllabus tracker (persistent, not tied to daily reset) ----
 const GATE_SUBJECTS = [
 { id: 'maths', label: 'Engineering Mathematics' },
-{ id: 'digital-logic', label: 'Digital Logic' },
-{ id: 'coa', label: 'Computer Organization & Architecture' },
-{ id: 'ds', label: 'Programming & Data Structures' },
-{ id: 'algo', label: 'Algorithms' },
-{ id: 'toc', label: 'Theory of Computation' },
-{ id: 'compilers', label: 'Compiler Design' },
-{ id: 'os', label: 'Operating Systems' },
-{ id: 'dbms', label: 'Databases' },
-{ id: 'cn', label: 'Computer Networks' }
+{ id: 'ss', label: 'Signals & Systems' },
+{ id: 'ed', label: 'Electronic Devices' },
+{ id: 'ac', label: 'Analog Circuits' },
+{ id: 'algo', label: 'Digital Circuits' },
+{ id: 'cs', label: 'Control Systems' },
+{ id: 'cm', label: 'Communication' },
+{ id: 'em', label: 'Electromagnetics' }
 ];
 let gateTopics = {}; // { subjectId: true/false }
 let gateTopicsRef = null;
