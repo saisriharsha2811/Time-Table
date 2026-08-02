@@ -208,6 +208,23 @@ align-items:center; gap: 10px; margin:0; cursor:pointer; }
 .topic-row input[type="checkbox"]{ width: 18px; height: 18px; accent-color: var(--violet); cursor:pointer; }
 .syllabus-modal-bar{ height: 6px; border-radius: 4px; background: var(--line); overflow:hidden; margin-bottom: 4px; }
 .syllabus-modal-bar-fill{ height:100%; background: var(--violet); }
+.gate-overview{ background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px; max-width: 480px; margin-bottom: 8px; }
+.subject-card{ background: var(--panel); border: 1px solid var(--line); border-radius: 12px; margin-bottom: 10px; overflow:hidden; max-width: 640px; }
+.subject-card.covered{ border-left: 3px solid var(--violet); }
+.subject-header{ display:flex; align-items:center; gap: 12px; padding: 14px 16px; cursor: pointer; }
+.subject-check input[type="checkbox"]{ width: 18px; height: 18px; accent-color: var(--violet); cursor:pointer; }
+.subject-name{ flex:1; font-size: 15px; font-weight: 600; }
+.subject-count{ font-size: 11px; color: var(--muted); }
+.subject-chevron{ color: var(--muted); font-size: 12px; width: 14px; text-align:center; }
+.subject-body{ padding: 0 16px 16px; border-top: 1px solid var(--line); }
+.subject-add-form{ display:flex; gap: 8px; margin: 14px 0; flex-wrap: wrap; }
+.subject-add-form input{ flex:1; min-width: 140px; background: var(--panel2); border: 1px solid var(--line); border-radius: 9px;
+padding: 9px 11px; color: var(--text); font-size: 13px; outline:none; font-family: inherit; }
+.subject-add-form input:focus{ border-color: var(--teal); }
+.subject-add-form button{ background: var(--violet); color: #0a0d11; border:none; border-radius: 9px; padding: 9px 16px;
+font-weight: 700; font-size: 13px; cursor:pointer; }
+.material-group-title{ font-family:"SFMono-Regular", Consolas, monospace; font-size: 10.5px; letter-spacing: 1px;
+text-transform: uppercase; color: var(--muted); margin: 12px 0 8px; }
 </style>
 </head>
 <body>
@@ -249,7 +266,7 @@ Sign in with Google
 <button class="tab-btn active" data-tab="college">College Days</button>
 <button class="tab-btn" data-tab="holiday">Holidays</button>
 <button class="tab-btn" data-tab="challenges">Challenges</button>
-<button class="tab-btn" data-tab="materials">GATE Materials</button>
+<button class="tab-btn" data-tab="materials">GATE Prep</button>
 </div>
 <!-- COLLEGE DAYS -->
 <div class="panel active" id="panel-college">
@@ -337,21 +354,58 @@ Sign in with Google
 <ul class="lb-list" id="lb-list"><li class="lb-empty">Loading rankings…</li></ul>
 </div>
 </div>
-<!-- MATERIALS -->
+<!-- GATE PREP -->
 <div class="panel" id="panel-materials">
-<div class="section-title">Add a material</div>
-<div class="material-form">
-<label class="mono" style="font-size:11px;color:var(--muted);">TITLE</label>
-<input type="text" id="mat-title" placeholder="e.g. Signals & Systems notes">
-<label class="mono" style="font-size:11px;color:var(--muted);">LINK (Drive, PDF, etc.)</label>
-<input type="text" id="mat-url" placeholder="https://...">
-<button id="mat-add">Add material</button>
+<div class="section-title">Overview</div>
+<div class="gate-overview">
+<div class="syllabus-modal-bar"><div class="syllabus-modal-bar-fill" id="syllabus-modal-bar-fill" style="width:0%"></div></div>
+<div class="syllabus-text" id="syllabus-modal-text" style="margin-bottom:14px;">0/10 subjects covered</div>
+<button class="mini-btn" data-timer-task="gate" data-timer-label="GATE prep">⏱ Start focus timer</button>
 </div>
-<div class="section-title">Shared materials</div>
-<div id="materials-list"></div>
+<div class="section-title">Subjects</div>
+<div class="sub" style="margin-bottom:16px;">Tick a subject once you've covered it, and drop PDFs, notes, or YouTube links under it for everyone to use. Links are auto-sorted by type.</div>
+<div id="gate-subjects-wrap"></div>
+<div id="gate-general-section" style="display:none;">
+<div class="section-title">Uncategorized materials</div>
+<div id="gate-general-list"></div>
 </div>
 </div>
 </div>
+</div>
+
+<div class="modal-overlay hidden" id="challenge-modal">
+<div class="modal">
+<h2>New challenge</h2>
+<p>Give it a name and list the tasks (one per line). Visible to everyone using this site.</p>
+<label>Challenge name</label>
+<input type="text" id="c-name" placeholder="e.g. No-Sugar Week" maxlength="30">
+<label>Tasks (one per line)</label>
+<textarea id="c-tasks" placeholder="Drink 2L water&#10;30 min walk&#10;No sugar after 6pm"></textarea>
+<button id="c-create">Create challenge</button>
+<button class="cancel" id="c-cancel">Cancel</button>
+</div>
+</div>
+
+<!-- POMODORO TIMER MODAL -->
+<div class="modal-overlay hidden" id="timer-modal">
+<div class="modal">
+<h2>Focus timer</h2>
+<div class="timer-task-name" id="timer-task-name">Study work</div>
+<div class="timer-mode-toggle">
+<button class="active" id="timer-mode-focus" data-mins="25">Focus · 25m</button>
+<button id="timer-mode-short" data-mins="5">Short break · 5m</button>
+<button id="timer-mode-long" data-mins="15">Long break · 15m</button>
+</div>
+<div class="timer-display" id="timer-display">25:00</div>
+<div class="timer-controls">
+<button id="timer-start">Start</button>
+<button class="secondary" id="timer-reset">Reset</button>
+</div>
+<div class="timer-sessions" id="timer-sessions">0 focus sessions completed today</div>
+<button class="cancel" id="timer-close">Close</button>
+</div>
+</div>
+
 <script>
 // ---- Firebase config ----
 const firebaseConfig = {
@@ -630,34 +684,26 @@ document.getElementById('c-name').value = '';
 document.getElementById('c-tasks').value = '';
 cModal.classList.add('hidden');
 });
-// ---- materials ----
+// ---- materials (subject-wise) ----
+let allMaterials = [];
 function loadMaterials(){
 db.collection('materials').orderBy('addedAt','desc').onSnapshot(qs => {
-const wrap = document.getElementById('materials-list');
-if(qs.empty){ wrap.innerHTML = '<div class="lb-empty">No materials shared yet.</div>'; return; }
-wrap.innerHTML = '';
-qs.forEach(doc => {
-const m = doc.data();
-const card = document.createElement('div');
-card.className = 'material-card';
-card.innerHTML = `
-<div><a href="${escapeHtml(m.url)}" target="_blank" rel="noopener">${escapeHtml(m.title)}</a>
-<div class="m-meta">added by ${escapeHtml(m.addedByName || 'someone')}</div></div>`;
-wrap.appendChild(card);
-});
+allMaterials = [];
+qs.forEach(doc => allMaterials.push({ id: doc.id, ...doc.data() }));
+renderGateSubjects();
 });
 }
-document.getElementById('mat-add').addEventListener('click', async () => {
-const title = document.getElementById('mat-title').value.trim();
-const url = document.getElementById('mat-url').value.trim();
-if(!title || !url) return;
-await db.collection('materials').add({
-title, url, addedBy: currentUser.uid, addedByName: currentUser.displayName || currentUser.email,
-addedAt: Date.now()
-});
-document.getElementById('mat-title').value = '';
-document.getElementById('mat-url').value = '';
-});
+function detectMaterialType(url){
+if(/youtube\.com|youtu\.be/i.test(url)) return 'youtube';
+const clean = url.split('?')[0].split('#')[0];
+if(/\.pdf$/i.test(clean)) return 'pdf';
+return 'material';
+}
+function materialIcon(type){
+if(type === 'youtube') return '▶️';
+if(type === 'pdf') return '📄';
+return '🔗';
+}
 
 // ---- streaks ----
 const STREAK_TASK_IDS = ['gym','study','lib','gate','skill'];
@@ -741,6 +787,7 @@ gateTopicsRef = db.collection('gateTopics').doc(currentUser.uid);
 const snap = await gateTopicsRef.get();
 gateTopics = snap.exists ? snap.data() : {};
 renderGateProgress();
+renderGateSubjects();
 }
 async function saveGateTopics(){ await gateTopicsRef.set(gateTopics); }
 
@@ -755,37 +802,109 @@ const miniBar = document.getElementById('gate-mini-bar');
 const miniText = document.getElementById('gate-mini-text');
 if(miniBar){ miniBar.style.width = pct + '%'; }
 if(miniText){ miniText.textContent = n + '/' + total + ' subjects covered'; }
-const modalBar = document.getElementById('syllabus-modal-bar-fill');
-const modalText = document.getElementById('syllabus-modal-text');
-if(modalBar){ modalBar.style.width = pct + '%'; }
-if(modalText){ modalText.textContent = n + '/' + total + ' subjects covered'; }
+const overviewBar = document.getElementById('syllabus-modal-bar-fill');
+const overviewText = document.getElementById('syllabus-modal-text');
+if(overviewBar){ overviewBar.style.width = pct + '%'; }
+if(overviewText){ overviewText.textContent = n + '/' + total + ' subjects covered'; }
 }
-function renderSyllabusList(){
-const wrap = document.getElementById('syllabus-topic-list');
+
+// tracks which subject cards are expanded, persists across re-renders
+let expandedSubjects = new Set();
+
+function materialsListHtml(items){
+if(!items.length) return '<div class="lb-empty" style="padding:8px 0;">Nothing here yet.</div>';
+return items.map(m => `
+<div class="material-card">
+<div><a href="${escapeHtml(m.url)}" target="_blank" rel="noopener">${materialIcon(m.type || detectMaterialType(m.url))} ${escapeHtml(m.title)}</a>
+<div class="m-meta">added by ${escapeHtml(m.addedByName || 'someone')}</div></div>
+</div>`).join('');
+}
+
+function renderGateSubjects(){
+const wrap = document.getElementById('gate-subjects-wrap');
+if(!wrap) return;
 wrap.innerHTML = '';
 GATE_SUBJECTS.forEach(s => {
-const row = document.createElement('div');
-row.className = 'topic-row';
-const checked = !!gateTopics[s.id];
-row.innerHTML = `<label><input type="checkbox" data-subject="${s.id}" ${checked ? 'checked' : ''}> ${escapeHtml(s.label)}</label>`;
-wrap.appendChild(row);
+const covered = !!gateTopics[s.id];
+const subjectMaterials = allMaterials.filter(m => m.subject === s.id);
+const youtubeItems = subjectMaterials.filter(m => (m.type || detectMaterialType(m.url)) === 'youtube');
+const docItems = subjectMaterials.filter(m => (m.type || detectMaterialType(m.url)) !== 'youtube');
+const isOpen = expandedSubjects.has(s.id);
+const card = document.createElement('div');
+card.className = 'subject-card' + (covered ? ' covered' : '');
+card.innerHTML = `
+<div class="subject-header" data-subject-toggle="${s.id}">
+<label class="subject-check"><input type="checkbox" data-subject-cover="${s.id}" ${covered ? 'checked' : ''}></label>
+<div class="subject-name">${escapeHtml(s.label)}</div>
+<div class="subject-count mono">${subjectMaterials.length} item${subjectMaterials.length===1?'':'s'}</div>
+<div class="subject-chevron">${isOpen ? '▾' : '▸'}</div>
+</div>
+<div class="subject-body" style="display:${isOpen ? 'block' : 'none'}">
+<div class="subject-add-form">
+<input type="text" placeholder="Title (e.g. Cormen Ch.4 notes)" data-subject-title="${s.id}">
+<input type="text" placeholder="Link — PDF, Drive, YouTube..." data-subject-url="${s.id}">
+<button data-subject-add="${s.id}">Add</button>
+</div>
+<div class="material-group-title">📄 Materials & PDFs</div>
+<div>${materialsListHtml(docItems)}</div>
+<div class="material-group-title">▶️ YouTube</div>
+<div>${materialsListHtml(youtubeItems)}</div>
+</div>`;
+wrap.appendChild(card);
 });
-wrap.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+// legacy materials added before subject tagging existed
+const general = allMaterials.filter(m => !m.subject || !GATE_SUBJECTS.find(s => s.id === m.subject));
+const generalSection = document.getElementById('gate-general-section');
+const generalList = document.getElementById('gate-general-list');
+if(generalSection && generalList){
+if(!general.length){ generalSection.style.display = 'none'; generalList.innerHTML = ''; }
+else { generalSection.style.display = 'block'; generalList.innerHTML = materialsListHtml(general); }
+}
+attachSubjectCardListeners();
+}
+
+function attachSubjectCardListeners(){
+document.querySelectorAll('[data-subject-toggle]').forEach(header => {
+header.addEventListener('click', () => {
+const id = header.getAttribute('data-subject-toggle');
+if(expandedSubjects.has(id)) expandedSubjects.delete(id); else expandedSubjects.add(id);
+renderGateSubjects();
+});
+});
+document.querySelectorAll('[data-subject-cover]').forEach(cb => {
+cb.addEventListener('click', (e) => e.stopPropagation());
 cb.addEventListener('change', async (e) => {
-const id = e.target.getAttribute('data-subject');
+const id = e.target.getAttribute('data-subject-cover');
 gateTopics[id] = e.target.checked;
 await saveGateTopics();
 renderGateProgress();
+const card = e.target.closest('.subject-card');
+if(card) card.classList.toggle('covered', e.target.checked);
+});
+});
+document.querySelectorAll('[data-subject-add]').forEach(btn => {
+btn.addEventListener('click', async (e) => {
+e.stopPropagation();
+const id = btn.getAttribute('data-subject-add');
+const titleInput = document.querySelector(`[data-subject-title="${id}"]`);
+const urlInput = document.querySelector(`[data-subject-url="${id}"]`);
+const title = titleInput.value.trim();
+const url = urlInput.value.trim();
+if(!title || !url) return;
+expandedSubjects.add(id);
+await db.collection('materials').add({
+title, url, type: detectMaterialType(url), subject: id,
+addedBy: currentUser.uid, addedByName: currentUser.displayName || currentUser.email,
+addedAt: Date.now()
+});
 });
 });
 }
-const syllabusModal = document.getElementById('syllabus-modal');
+
+// clicking "Syllabus tracker" on the College Days GATE box jumps to the GATE Prep tab
 document.getElementById('open-syllabus').addEventListener('click', () => {
-renderSyllabusList();
-renderGateProgress();
-syllabusModal.classList.remove('hidden');
+document.querySelector('.tab-btn[data-tab="materials"]').click();
 });
-document.getElementById('syllabus-close').addEventListener('click', () => syllabusModal.classList.add('hidden'));
 
 // ---- pomodoro focus timer ----
 const FOCUS_MINS = 25, SHORT_BREAK_MINS = 5, LONG_BREAK_MINS = 15;
@@ -892,49 +1011,5 @@ Notification.requestPermission();
 });
 });
 </script>
-<div class="modal-overlay hidden" id="challenge-modal">
-<div class="modal">
-<h2>New challenge</h2>
-<p>Give it a name and list the tasks (one per line). Visible to everyone using this site.</p>
-<label>Challenge name</label>
-<input type="text" id="c-name" placeholder="e.g. No-Sugar Week" maxlength="30">
-<label>Tasks (one per line)</label>
-<textarea id="c-tasks" placeholder="Drink 2L water&#10;30 min walk&#10;No sugar after 6pm"></textarea>
-<button id="c-create">Create challenge</button>
-<button class="cancel" id="c-cancel">Cancel</button>
-</div>
-</div>
-
-<!-- POMODORO TIMER MODAL -->
-<div class="modal-overlay hidden" id="timer-modal">
-<div class="modal">
-<h2>Focus timer</h2>
-<div class="timer-task-name" id="timer-task-name">Study work</div>
-<div class="timer-mode-toggle">
-<button class="active" id="timer-mode-focus" data-mins="25">Focus · 25m</button>
-<button id="timer-mode-short" data-mins="5">Short break · 5m</button>
-<button id="timer-mode-long" data-mins="15">Long break · 15m</button>
-</div>
-<div class="timer-display" id="timer-display">25:00</div>
-<div class="timer-controls">
-<button id="timer-start">Start</button>
-<button class="secondary" id="timer-reset">Reset</button>
-</div>
-<div class="timer-sessions" id="timer-sessions">0 focus sessions completed today</div>
-<button class="cancel" id="timer-close">Close</button>
-</div>
-</div>
-
-<!-- GATE SYLLABUS TRACKER MODAL -->
-<div class="modal-overlay hidden" id="syllabus-modal">
-<div class="modal">
-<h2>GATE syllabus tracker</h2>
-<p>Mark subjects off as you finish covering them. This is persistent — it doesn't reset daily like the checklist.</p>
-<div class="syllabus-modal-bar"><div class="syllabus-modal-bar-fill" id="syllabus-modal-bar-fill" style="width:0%"></div></div>
-<div class="syllabus-text" id="syllabus-modal-text" style="margin-bottom:14px;">0/10 subjects covered</div>
-<div id="syllabus-topic-list"></div>
-<button class="cancel" id="syllabus-close" style="margin-top:16px;">Close</button>
-</div>
-</div>
 </body>
 </html>
