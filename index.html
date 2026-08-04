@@ -201,26 +201,62 @@ margin: 6px 0 20px; letter-spacing: 2px; font-weight: 700; }
 .timer-sessions{ text-align:center; font-size: 12px; color: var(--muted); font-family:"SFMono-Regular", Consolas, monospace; }
 
 /* gate syllabus modal */
-.topic-row{ display:flex; align-items:center; justify-content:space-between; padding: 11px 0; border-bottom: 1px solid var(--line); }
-.topic-row:last-child{ border-bottom: none; }
-.topic-row label{ font-size: 14px; color: var(--text); text-transform:none; letter-spacing:0; display:flex;
-align-items:center; gap: 10px; margin:0; cursor:pointer; }
-.topic-row input[type="checkbox"]{ width: 18px; height: 18px; accent-color: var(--violet); cursor:pointer; }
-.syllabus-modal-bar{ height: 6px; border-radius: 4px; background: var(--line); overflow:hidden; margin-bottom: 4px; }
-.syllabus-modal-bar-fill{ height:100%; background: var(--violet); }
-.gate-overview{ background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px; max-width: 480px; margin-bottom: 8px; }
-.subject-card{ background: var(--panel); border: 1px solid var(--line); border-radius: 12px; margin-bottom: 10px; overflow:hidden; max-width: 640px; }
-.subject-card.covered{ border-left: 3px solid var(--violet); }
-.subject-header{ display:flex; align-items:center; gap: 12px; padding: 14px 16px; cursor: pointer; }
-.subject-check input[type="checkbox"]{ width: 18px; height: 18px; accent-color: var(--violet); cursor:pointer; }
-.subject-name{ flex:1; font-size: 15px; font-weight: 600; }
-.subject-count{ font-size: 11px; color: var(--muted); }
-.subject-chevron{ color: var(--muted); font-size: 12px; width: 14px; text-align:center; }
-.subject-body{ padding: 0 16px 16px; border-top: 1px solid var(--line); }
+.gate-overview{ background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 20px; max-width: 560px; margin-bottom: 8px; }
+.gp-meter-row{ display:flex; align-items:center; gap: 20px; flex-wrap: wrap; margin-bottom: 4px; }
+.gp-meter{ flex:1; min-width: 200px; }
+.gp-meter-label{ display:flex; justify-content:space-between; font-family:"SFMono-Regular", Consolas, monospace; font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+.gp-meter-track{ height: 6px; background: var(--line); border-radius: 3px; overflow:hidden; }
+.gp-meter-fill{ height:100%; background: linear-gradient(90deg, var(--teal), var(--amber)); border-radius: 3px; width:0%; transition: width 0.5s ease; }
+.gp-stat-chip{ font-family:"SFMono-Regular", Consolas, monospace; font-size: 13px; background: var(--panel2); border: 1px solid var(--line);
+padding: 8px 14px; border-radius: 8px; white-space: nowrap; }
+.gp-stat-chip b{ color: var(--teal); }
+
+.gp-phase{ position: relative; padding-left: 40px; margin-bottom: 6px; }
+.gp-phase::before{ content:""; position:absolute; left: 15px; top: 6px; bottom: -8px; width: 2px; background: var(--line); }
+.gp-phase:last-of-type::before{ display: none; }
+.gp-node{ display:flex; align-items:center; gap: 12px; margin-bottom: 16px; padding-top: 4px; }
+.gp-node-dot{ position:absolute; left: -40px; top: 2px; width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--line);
+background: var(--panel2); display:flex; align-items:center; justify-content:center; flex-shrink:0; transition: all 0.3s ease; }
+.gp-node-dot::after{ content:""; width:7px; height:7px; border-radius:50%; background: var(--line); transition: background 0.3s ease; }
+.gp-node-dot.complete{ border-color: var(--teal); box-shadow: 0 0 10px rgba(95,208,192,0.5); }
+.gp-node-dot.complete::after{ background: var(--teal); box-shadow: 0 0 6px var(--teal); }
+.gp-phase-title{ font-size: 17px; font-weight: 700; }
+.gp-phase-sub{ font-family:"SFMono-Regular", Consolas, monospace; font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+.gp-phase-pct{ margin-left: auto; font-family:"SFMono-Regular", Consolas, monospace; font-size: 12.5px; color: var(--muted); }
+.gp-cards{ display:flex; flex-direction:column; gap: 12px; margin-bottom: 10px; max-width: 640px; }
+
+.gp-card{ background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; transition: border-color 0.2s ease; }
+.gp-card:hover{ border-color: var(--amber); }
+.gp-card-head{ display:flex; justify-content:space-between; align-items:flex-start; gap: 12px; margin-bottom: 4px; }
+.gp-card-title{ font-size: 16px; font-weight: 700; }
+.gp-card-progress{ font-family:"SFMono-Regular", Consolas, monospace; font-size: 11px; color: var(--muted); white-space:nowrap; padding-top: 2px; }
+.gp-card-progress.done{ color: var(--teal); }
+.gp-chips{ display:flex; flex-wrap:wrap; gap: 6px; margin: 10px 0 14px; }
+.gp-chip{ font-family:"SFMono-Regular", Consolas, monospace; font-size: 11px; color: var(--amber); background: rgba(255,180,84,0.08);
+border: 1px solid rgba(255,180,84,0.25); padding: 4px 9px; border-radius: 6px; }
+.gp-mini-track{ height: 3px; background: var(--line); border-radius: 2px; overflow:hidden; margin-bottom: 14px; }
+.gp-mini-fill{ height:100%; background: var(--teal); width:0%; transition: width 0.4s ease; }
+.gp-tasks{ display:flex; flex-direction:column; gap: 2px; margin-bottom: 4px; }
+.gp-task{ display:flex; align-items:center; gap: 12px; padding: 7px 4px; border-radius: 6px; cursor:pointer; user-select:none; }
+.gp-task:hover{ background: rgba(255,255,255,0.03); }
+.gp-task input{ display:none; }
+.gp-pad{ flex-shrink:0; width: 17px; height: 17px; border-radius: 50%; border: 2px solid var(--line); background: var(--bg); position:relative; transition: all 0.2s ease; }
+.gp-task input:checked + .gp-pad{ border-color: var(--teal); background: rgba(95,208,192,0.2); box-shadow: 0 0 8px rgba(95,208,192,0.4); }
+.gp-task input:checked + .gp-pad::after{ content:""; position:absolute; left:50%; top:50%; width:6px; height:6px; background: var(--teal);
+border-radius:50%; transform: translate(-50%,-50%); }
+.gp-task-label{ font-size: 13.5px; }
+.gp-task input:checked ~ .gp-task-label{ color: var(--muted); text-decoration: line-through; text-decoration-color: var(--line); }
+.gp-community-toggle{ font-family:"SFMono-Regular", Consolas, monospace; font-size: 11.5px; color: var(--muted); cursor:pointer;
+margin-top: 4px; padding-top: 12px; border-top: 1px dashed var(--line); }
+.gp-community-toggle:hover{ color: var(--text); }
+.gp-community-body{ margin-top: 12px; }
 .subject-add-form{ display:flex; gap: 8px; margin: 14px 0; flex-wrap: wrap; }
 .subject-add-form input{ flex:1; min-width: 140px; background: var(--panel2); border: 1px solid var(--line); border-radius: 9px;
 padding: 9px 11px; color: var(--text); font-size: 13px; outline:none; font-family: inherit; }
 .subject-add-form input:focus{ border-color: var(--teal); }
+.subject-add-form select{ background: var(--panel2); border: 1px solid var(--line); border-radius: 9px;
+padding: 9px 11px; color: var(--text); font-size: 13px; outline:none; font-family: inherit; cursor:pointer; }
+.subject-add-form select:focus{ border-color: var(--teal); }
 .subject-add-form button{ background: var(--violet); color: #0a0d11; border:none; border-radius: 9px; padding: 9px 16px;
 font-weight: 700; font-size: 13px; cursor:pointer; }
 .material-group-title{ font-family:"SFMono-Regular", Consolas, monospace; font-size: 10.5px; letter-spacing: 1px;
@@ -358,12 +394,17 @@ Sign in with Google
 <div class="panel" id="panel-materials">
 <div class="section-title">Overview</div>
 <div class="gate-overview">
-<div class="syllabus-modal-bar"><div class="syllabus-modal-bar-fill" id="syllabus-modal-bar-fill" style="width:0%"></div></div>
-<div class="syllabus-text" id="syllabus-modal-text" style="margin-bottom:14px;">0/10 subjects covered</div>
-<button class="mini-btn" data-timer-task="gate" data-timer-label="GATE prep">⏱ Start focus timer</button>
+<div class="gp-meter-row">
+<div class="gp-meter">
+<div class="gp-meter-label"><span>Overall progress</span><span id="gp-overall-pct">0%</span></div>
+<div class="gp-meter-track"><div class="gp-meter-fill" id="gp-overall-fill" style="width:0%"></div></div>
 </div>
-<div class="section-title">Subjects</div>
-<div class="sub" style="margin-bottom:16px;">Tick a subject once you've covered it, and drop PDFs, notes, or YouTube links under it for everyone to use. Links are auto-sorted by type.</div>
+<div class="gp-stat-chip"><b id="gp-overall-done">0</b> / <span id="gp-overall-total">0</span> topics cleared</div>
+</div>
+<button class="mini-btn" data-timer-task="gate" data-timer-label="GATE prep" style="margin-top:14px;">⏱ Start focus timer</button>
+</div>
+<div class="section-title">Roadmap</div>
+<div class="sub" style="margin-bottom:16px;">Subjects laid out in the order they're usually learned. Tick off topics as you cover them, and drop PDFs, PYQs, or YouTube links under each subject for everyone to use.</div>
 <div id="gate-subjects-wrap"></div>
 <div id="gate-general-section" style="display:none;">
 <div class="section-title">Uncategorized materials</div>
@@ -701,6 +742,7 @@ return 'material';
 }
 function materialIcon(type){
 if(type === 'youtube') return '▶️';
+if(type === 'pyq') return '📝';
 if(type === 'pdf') return '📄';
 return '🔗';
 }
@@ -767,50 +809,125 @@ el.classList.toggle('zero', displayCount === 0);
 function renderAllStreakBadges(){ STREAK_TASK_IDS.forEach(renderStreakBadge); }
 
 // ---- GATE syllabus tracker (persistent, not tied to daily reset) ----
-const GATE_SUBJECTS = [
-{ id: 'maths', label: 'Engineering Mathematics' },
-{ id: 'ss', label: 'Signals & Systems' },
-{ id: 'ed', label: 'Electronic Devices' },
-{ id: 'ac', label: 'Analog Circuits' },
-{ id: 'algo', label: 'Digital Circuits' },
-{ id: 'cs', label: 'Control Systems' },
-{ id: 'cm', label: 'Communication' },
-{ id: 'em', label: 'Electromagnetics' }
+// Roadmap: subjects grouped into learning phases, each with granular topics
+// and a couple of standard reference books. Subject ids are unchanged from
+// before so any materials already tagged by subject keep working.
+const GATE_PHASES = [
+{ phase: 'Year 2', sub: 'Foundation — build the base', subjects: [
+{ id: 'maths', name: 'Engineering Mathematics',
+materials: ['Kreyszig — Advanced Engineering Mathematics', 'Kenneth Rosen — Discrete Mathematics and Its Applications'],
+topics: ['Linear Algebra', 'Calculus', 'Probability & Statistics', 'Discrete Mathematics', 'Graph Theory'] },
+{ id: 'digital-logic', name: 'Digital Logic',
+materials: ['Morris Mano — Digital Design', 'Kohavi — Switching and Finite Automata Theory'],
+topics: ['Number systems & codes', 'Boolean algebra & minimization', 'Combinational circuits', 'Sequential circuits', 'Semiconductor memories'] }
+]},
+{ phase: 'Year 2 → 3', sub: 'Core computing', subjects: [
+{ id: 'ds', name: 'Programming & Data Structures',
+materials: ['Seymour Lipschutz — Data Structures', 'Cormen et al. — Introduction to Algorithms (DS chapters)'],
+topics: ['C programming fundamentals', 'Arrays, stacks, queues', 'Linked lists', 'Trees & BSTs', 'Hashing', 'Heaps'] },
+{ id: 'coa', name: 'Computer Organization & Architecture',
+materials: ['Hamacher — Computer Organization', 'Patterson & Hennessy — Computer Organization and Design'],
+topics: ['Machine instructions & addressing modes', 'ALU & datapath', 'Instruction pipelining', 'Memory hierarchy & cache', 'I/O interfacing'] }
+]},
+{ phase: 'Year 3', sub: 'Algorithms & theory', subjects: [
+{ id: 'algo', name: 'Algorithms',
+materials: ['Cormen, Leiserson, Rivest, Stein — Introduction to Algorithms'],
+topics: ['Asymptotic analysis', 'Divide & conquer', 'Greedy algorithms', 'Dynamic programming', 'Graph algorithms', 'NP-completeness'] },
+{ id: 'toc', name: 'Theory of Computation',
+materials: ['Hopcroft, Motwani, Ullman — Introduction to Automata Theory, Languages, and Computation'],
+topics: ['Regular languages & finite automata', 'Context-free grammars & PDA', 'Turing machines', 'Undecidability'] }
+]},
+{ phase: 'Year 3 → 4', sub: 'Systems software', subjects: [
+{ id: 'os', name: 'Operating Systems',
+materials: ['Silberschatz, Galvin, Gagne — Operating System Concepts', 'Andrew Tanenbaum — Modern Operating Systems'],
+topics: ['Processes & threads', 'CPU scheduling', 'Synchronization & deadlocks', 'Memory management & paging', 'File systems'] },
+{ id: 'compilers', name: 'Compiler Design',
+materials: ['Aho, Lam, Sethi, Ullman — Compilers: Principles, Techniques, and Tools'],
+topics: ['Lexical analysis', 'Parsing (top-down & bottom-up)', 'Syntax-directed translation', 'Code optimization', 'Runtime environments'] }
+]},
+{ phase: 'Year 4', sub: 'Data & networks', subjects: [
+{ id: 'dbms', name: 'Databases',
+materials: ['Silberschatz, Korth, Sudarshan — Database System Concepts', 'Elmasri & Navathe — Fundamentals of Database Systems'],
+topics: ['ER model & relational model', 'SQL', 'Normalization', 'Transactions & concurrency control', 'Indexing & query processing'] },
+{ id: 'cn', name: 'Computer Networks',
+materials: ['Kurose & Ross — Computer Networking: A Top-Down Approach', 'Andrew Tanenbaum — Computer Networks'],
+topics: ['Layering & OSI/TCP-IP model', 'Data link layer & MAC', 'Routing algorithms', 'Transport layer (TCP/UDP)', 'Application layer protocols'] }
+]},
+{ phase: 'Year 4 (final)', sub: 'Consolidation, not new learning', subjects: [
+{ id: 'consolidation', name: 'Final Revision & Practice',
+materials: ['15–20 years of GATE CS PYQs', 'Full-length timed mock tests'],
+topics: ['Full-syllabus revision pass', 'Timed subject-wise PYQ sets', 'Full-length mock tests', 'Targeted revision of weak areas'] }
+]}
 ];
-let gateTopics = {}; // { subjectId: true/false }
+const GATE_SUBJECTS = GATE_PHASES.flatMap(p => p.subjects);
+
+let gateTopics = {}; // { "subjectId::topicIndex": true }
 let gateTopicsRef = null;
 
 async function loadGateTopics(){
 gateTopicsRef = db.collection('gateTopics').doc(currentUser.uid);
 const snap = await gateTopicsRef.get();
 gateTopics = snap.exists ? snap.data() : {};
+// migrate old subject-level flags (from before per-topic tracking existed)
+let migrated = false;
+GATE_SUBJECTS.forEach(s => {
+if(gateTopics[s.id] === true){
+s.topics.forEach((_, i) => {
+const key = s.id + '::' + i;
+if(gateTopics[key] === undefined) gateTopics[key] = true;
+});
+delete gateTopics[s.id];
+migrated = true;
+}
+});
+if(migrated) await saveGateTopics();
 renderGateProgress();
 renderGateSubjects();
 }
 async function saveGateTopics(){ await gateTopicsRef.set(gateTopics); }
 
-function gateCoveredCount(){
-return GATE_SUBJECTS.filter(s => gateTopics[s.id]).length;
+function allGateTopicKeys(){
+const keys = [];
+GATE_SUBJECTS.forEach(s => s.topics.forEach((_, i) => keys.push(s.id + '::' + i)));
+return keys;
+}
+function gateOverallStats(){
+const keys = allGateTopicKeys();
+const done = keys.filter(k => gateTopics[k]).length;
+return { done, total: keys.length };
+}
+function subjectStats(subject){
+const total = subject.topics.length;
+const done = subject.topics.filter((_, i) => gateTopics[subject.id + '::' + i]).length;
+return { done, total, pct: total ? Math.round((done/total)*100) : 0 };
+}
+function phaseStats(phase){
+let done = 0, total = 0;
+phase.subjects.forEach(s => { const st = subjectStats(s); done += st.done; total += st.total; });
+return { done, total, pct: total ? Math.round((done/total)*100) : 0 };
 }
 function renderGateProgress(){
-const n = gateCoveredCount();
-const total = GATE_SUBJECTS.length;
-const pct = Math.round((n/total)*100);
+const { done, total } = gateOverallStats();
+const pct = total ? Math.round((done/total)*100) : 0;
 const miniBar = document.getElementById('gate-mini-bar');
 const miniText = document.getElementById('gate-mini-text');
 if(miniBar){ miniBar.style.width = pct + '%'; }
-if(miniText){ miniText.textContent = n + '/' + total + ' subjects covered'; }
-const overviewBar = document.getElementById('syllabus-modal-bar-fill');
-const overviewText = document.getElementById('syllabus-modal-text');
-if(overviewBar){ overviewBar.style.width = pct + '%'; }
-if(overviewText){ overviewText.textContent = n + '/' + total + ' subjects covered'; }
+if(miniText){ miniText.textContent = done + '/' + total + ' topics covered'; }
+const overallFill = document.getElementById('gp-overall-fill');
+const overallPct = document.getElementById('gp-overall-pct');
+const overallDone = document.getElementById('gp-overall-done');
+const overallTotal = document.getElementById('gp-overall-total');
+if(overallFill){ overallFill.style.width = pct + '%'; }
+if(overallPct){ overallPct.textContent = pct + '%'; }
+if(overallDone){ overallDone.textContent = done; }
+if(overallTotal){ overallTotal.textContent = total; }
 }
 
-// tracks which subject cards are expanded, persists across re-renders
-let expandedSubjects = new Set();
+// tracks which subjects' community-materials sections are expanded, persists across re-renders
+let expandedCommunity = new Set();
 
 function materialsListHtml(items){
-if(!items.length) return '<div class="lb-empty" style="padding:8px 0;">Nothing here yet.</div>';
+if(!items.length) return '<div class="lb-empty" style="padding:6px 0;">Nothing here yet.</div>';
 return items.map(m => `
 <div class="material-card">
 <div><a href="${escapeHtml(m.url)}" target="_blank" rel="noopener">${materialIcon(m.type || detectMaterialType(m.url))} ${escapeHtml(m.title)}</a>
@@ -822,33 +939,70 @@ function renderGateSubjects(){
 const wrap = document.getElementById('gate-subjects-wrap');
 if(!wrap) return;
 wrap.innerHTML = '';
-GATE_SUBJECTS.forEach(s => {
-const covered = !!gateTopics[s.id];
+GATE_PHASES.forEach(phase => {
+const pStats = phaseStats(phase);
+const phaseEl = document.createElement('div');
+phaseEl.className = 'gp-phase';
+const node = document.createElement('div');
+node.className = 'gp-node';
+node.innerHTML = `
+<div class="gp-node-dot ${pStats.pct === 100 ? 'complete' : ''}"></div>
+<div>
+<div class="gp-phase-title">${escapeHtml(phase.phase)}</div>
+<div class="gp-phase-sub">${escapeHtml(phase.sub)}</div>
+</div>
+<div class="gp-phase-pct">${pStats.pct}%</div>`;
+phaseEl.appendChild(node);
+
+const cardsWrap = document.createElement('div');
+cardsWrap.className = 'gp-cards';
+
+phase.subjects.forEach(s => {
+const st = subjectStats(s);
 const subjectMaterials = allMaterials.filter(m => m.subject === s.id);
 const youtubeItems = subjectMaterials.filter(m => (m.type || detectMaterialType(m.url)) === 'youtube');
-const docItems = subjectMaterials.filter(m => (m.type || detectMaterialType(m.url)) !== 'youtube');
-const isOpen = expandedSubjects.has(s.id);
+const pyqItems = subjectMaterials.filter(m => (m.type || detectMaterialType(m.url)) === 'pyq');
+const docItems = subjectMaterials.filter(m => { const t = m.type || detectMaterialType(m.url); return t !== 'youtube' && t !== 'pyq'; });
+const isOpen = expandedCommunity.has(s.id);
+const chipsHtml = s.materials.map(m => `<span class="gp-chip">${escapeHtml(m)}</span>`).join('');
+const topicsHtml = s.topics.map((t, i) => {
+const key = s.id + '::' + i;
+const checked = gateTopics[key] ? 'checked' : '';
+return `<label class="gp-task"><input type="checkbox" data-topic-id="${key}" ${checked}><span class="gp-pad"></span><span class="gp-task-label">${escapeHtml(t)}</span></label>`;
+}).join('');
 const card = document.createElement('div');
-card.className = 'subject-card' + (covered ? ' covered' : '');
+card.className = 'gp-card';
 card.innerHTML = `
-<div class="subject-header" data-subject-toggle="${s.id}">
-<label class="subject-check"><input type="checkbox" data-subject-cover="${s.id}" ${covered ? 'checked' : ''}></label>
-<div class="subject-name">${escapeHtml(s.label)}</div>
-<div class="subject-count mono">${subjectMaterials.length} item${subjectMaterials.length===1?'':'s'}</div>
-<div class="subject-chevron">${isOpen ? '▾' : '▸'}</div>
+<div class="gp-card-head">
+<div class="gp-card-title">${escapeHtml(s.name)}</div>
+<div class="gp-card-progress ${st.pct === 100 ? 'done' : ''}">${st.done}/${st.total}${st.pct === 100 ? ' · complete' : ''}</div>
 </div>
-<div class="subject-body" style="display:${isOpen ? 'block' : 'none'}">
+<div class="gp-chips">${chipsHtml}</div>
+<div class="gp-mini-track"><div class="gp-mini-fill" style="width:${st.pct}%"></div></div>
+<div class="gp-tasks">${topicsHtml}</div>
+<div class="gp-community-toggle" data-community-toggle="${s.id}">${isOpen ? '▾' : '▸'} Community materials & PYQs (${subjectMaterials.length})</div>
+<div class="gp-community-body" style="display:${isOpen ? 'block' : 'none'}">
 <div class="subject-add-form">
 <input type="text" placeholder="Title (e.g. Cormen Ch.4 notes)" data-subject-title="${s.id}">
 <input type="text" placeholder="Link — PDF, Drive, YouTube..." data-subject-url="${s.id}">
+<select data-subject-type="${s.id}">
+<option value="material">Material / PDF</option>
+<option value="pyq">PYQ</option>
+<option value="youtube">YouTube</option>
+</select>
 <button data-subject-add="${s.id}">Add</button>
 </div>
 <div class="material-group-title">📄 Materials & PDFs</div>
 <div>${materialsListHtml(docItems)}</div>
+<div class="material-group-title">📝 PYQs</div>
+<div>${materialsListHtml(pyqItems)}</div>
 <div class="material-group-title">▶️ YouTube</div>
 <div>${materialsListHtml(youtubeItems)}</div>
 </div>`;
-wrap.appendChild(card);
+cardsWrap.appendChild(card);
+});
+phaseEl.appendChild(cardsWrap);
+wrap.appendChild(phaseEl);
 });
 // legacy materials added before subject tagging existed
 const general = allMaterials.filter(m => !m.subject || !GATE_SUBJECTS.find(s => s.id === m.subject));
@@ -862,22 +1016,20 @@ attachSubjectCardListeners();
 }
 
 function attachSubjectCardListeners(){
-document.querySelectorAll('[data-subject-toggle]').forEach(header => {
-header.addEventListener('click', () => {
-const id = header.getAttribute('data-subject-toggle');
-if(expandedSubjects.has(id)) expandedSubjects.delete(id); else expandedSubjects.add(id);
+document.querySelectorAll('[data-topic-id]').forEach(cb => {
+cb.addEventListener('change', async (e) => {
+const key = e.target.getAttribute('data-topic-id');
+gateTopics[key] = e.target.checked;
+await saveGateTopics();
+renderGateProgress();
 renderGateSubjects();
 });
 });
-document.querySelectorAll('[data-subject-cover]').forEach(cb => {
-cb.addEventListener('click', (e) => e.stopPropagation());
-cb.addEventListener('change', async (e) => {
-const id = e.target.getAttribute('data-subject-cover');
-gateTopics[id] = e.target.checked;
-await saveGateTopics();
-renderGateProgress();
-const card = e.target.closest('.subject-card');
-if(card) card.classList.toggle('covered', e.target.checked);
+document.querySelectorAll('[data-community-toggle]').forEach(toggle => {
+toggle.addEventListener('click', () => {
+const id = toggle.getAttribute('data-community-toggle');
+if(expandedCommunity.has(id)) expandedCommunity.delete(id); else expandedCommunity.add(id);
+renderGateSubjects();
 });
 });
 document.querySelectorAll('[data-subject-add]').forEach(btn => {
@@ -886,12 +1038,13 @@ e.stopPropagation();
 const id = btn.getAttribute('data-subject-add');
 const titleInput = document.querySelector(`[data-subject-title="${id}"]`);
 const urlInput = document.querySelector(`[data-subject-url="${id}"]`);
+const typeSelect = document.querySelector(`[data-subject-type="${id}"]`);
 const title = titleInput.value.trim();
 const url = urlInput.value.trim();
 if(!title || !url) return;
-expandedSubjects.add(id);
+expandedCommunity.add(id);
 await db.collection('materials').add({
-title, url, type: detectMaterialType(url), subject: id,
+title, url, type: typeSelect ? typeSelect.value : detectMaterialType(url), subject: id,
 addedBy: currentUser.uid, addedByName: currentUser.displayName || currentUser.email,
 addedAt: Date.now()
 });
