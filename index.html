@@ -810,53 +810,53 @@ function renderAllStreakBadges(){ STREAK_TASK_IDS.forEach(renderStreakBadge); }
 
 // ---- GATE syllabus tracker (persistent, not tied to daily reset) ----
 // Roadmap: subjects grouped into learning phases, each with granular topics
-// and a couple of standard reference books. Subject ids are unchanged from
-// before so any materials already tagged by subject keep working.
+// and a couple of standard reference books, taken from your Signal Path
+// reference file. Subject ids match that file so nothing needs remapping.
 const GATE_PHASES = [
-{ phase: 'Year 2', sub: 'Foundation — build the base', subjects: [
+{ phase: 'Year 2', sub: 'Foundation — happening now', subjects: [
 { id: 'maths', name: 'Engineering Mathematics',
-materials: ['Kreyszig — Advanced Engineering Mathematics', 'Kenneth Rosen — Discrete Mathematics and Its Applications'],
-topics: ['Linear Algebra', 'Calculus', 'Probability & Statistics', 'Discrete Mathematics', 'Graph Theory'] },
-{ id: 'digital-logic', name: 'Digital Logic',
+materials: ['B.S. Grewal — Higher Engineering Mathematics', 'Kreyszig — Advanced Engineering Mathematics'],
+topics: ['Linear Algebra', 'Calculus', 'Differential Equations', 'Complex Analysis', 'Probability & Statistics', 'Vector Analysis', 'Transform Theory'] },
+{ id: 'networks', name: 'Networks (Circuit Theory)',
+materials: ['Hayt & Kemmerly — Engineering Circuit Analysis', 'D. Roy Choudhury — Networks and Systems'],
+topics: ['Network theorems (Thevenin, Norton, superposition)', 'Two-port networks', 'Transient RC/RL/RLC analysis', 'AC steady-state analysis'] },
+{ id: 'devices', name: 'Electronic Devices',
+materials: ['Donald Neamen — Semiconductor Physics and Devices', 'Millman & Halkias — Electronic Devices and Circuits'],
+topics: ['Semiconductor physics & energy bands', 'PN junction diode', 'BJT characteristics', 'MOSFET characteristics'] }
+]},
+{ phase: 'Year 2 → 3', sub: 'Core circuits', subjects: [
+{ id: 'analog', name: 'Analog Circuits',
+materials: ['Sedra & Smith — Microelectronic Circuits', 'Millman & Halkias — Integrated Electronics'],
+topics: ['Diode / BJT / MOSFET amplifiers', 'Op-amp circuits', 'Feedback amplifiers', 'Oscillators', 'Frequency response'] },
+{ id: 'digital', name: 'Digital Circuits',
 materials: ['Morris Mano — Digital Design', 'Kohavi — Switching and Finite Automata Theory'],
-topics: ['Number systems & codes', 'Boolean algebra & minimization', 'Combinational circuits', 'Sequential circuits', 'Semiconductor memories'] }
+topics: ['Boolean algebra', 'Combinational circuits', 'Sequential circuits', 'Number systems', 'Semiconductor memories'] }
 ]},
-{ phase: 'Year 2 → 3', sub: 'Core computing', subjects: [
-{ id: 'ds', name: 'Programming & Data Structures',
-materials: ['Seymour Lipschutz — Data Structures', 'Cormen et al. — Introduction to Algorithms (DS chapters)'],
-topics: ['C programming fundamentals', 'Arrays, stacks, queues', 'Linked lists', 'Trees & BSTs', 'Hashing', 'Heaps'] },
-{ id: 'coa', name: 'Computer Organization & Architecture',
-materials: ['Hamacher — Computer Organization', 'Patterson & Hennessy — Computer Organization and Design'],
-topics: ['Machine instructions & addressing modes', 'ALU & datapath', 'Instruction pipelining', 'Memory hierarchy & cache', 'I/O interfacing'] }
+{ phase: 'Year 3', sub: 'Systems and behaviour', subjects: [
+{ id: 'signals', name: 'Signals and Systems',
+materials: ['Oppenheim & Willsky — Signals and Systems', 'Simon Haykin — Signals and Systems'],
+topics: ['Fourier Series & Transform', 'Laplace Transform', 'Z-Transform', 'Convolution', 'Sampling theorem'] },
+{ id: 'control', name: 'Control Systems',
+materials: ['Ogata — Modern Control Engineering', 'Nise — Control Systems Engineering'],
+topics: ['Transfer functions & block diagrams', 'Time & frequency response', 'Stability (Routh-Hurwitz, root locus, Bode/Nyquist)', 'State-space representation'] }
 ]},
-{ phase: 'Year 3', sub: 'Algorithms & theory', subjects: [
-{ id: 'algo', name: 'Algorithms',
-materials: ['Cormen, Leiserson, Rivest, Stein — Introduction to Algorithms'],
-topics: ['Asymptotic analysis', 'Divide & conquer', 'Greedy algorithms', 'Dynamic programming', 'Graph algorithms', 'NP-completeness'] },
-{ id: 'toc', name: 'Theory of Computation',
-materials: ['Hopcroft, Motwani, Ullman — Introduction to Automata Theory, Languages, and Computation'],
-topics: ['Regular languages & finite automata', 'Context-free grammars & PDA', 'Turing machines', 'Undecidability'] }
+{ phase: 'Year 3 → 4', sub: 'Applied domains', subjects: [
+{ id: 'comms', name: 'Communications',
+materials: ['Simon Haykin — Communication Systems', 'Taub & Schilling — Principles of Communication Systems'],
+topics: ['Analog modulation (AM/FM) & demodulation', 'Digital communication & modulation', 'Information theory basics', 'Noise & SNR'] },
+{ id: 'em', name: 'Electromagnetics',
+materials: ['William H. Hayt — Engineering Electromagnetics'],
+topics: ['Maxwell\'s equations', 'Wave propagation', 'Transmission lines', 'Waveguides & antennas'] }
 ]},
-{ phase: 'Year 3 → 4', sub: 'Systems software', subjects: [
-{ id: 'os', name: 'Operating Systems',
-materials: ['Silberschatz, Galvin, Gagne — Operating System Concepts', 'Andrew Tanenbaum — Modern Operating Systems'],
-topics: ['Processes & threads', 'CPU scheduling', 'Synchronization & deadlocks', 'Memory management & paging', 'File systems'] },
-{ id: 'compilers', name: 'Compiler Design',
-materials: ['Aho, Lam, Sethi, Ullman — Compilers: Principles, Techniques, and Tools'],
-topics: ['Lexical analysis', 'Parsing (top-down & bottom-up)', 'Syntax-directed translation', 'Code optimization', 'Runtime environments'] }
+{ phase: 'Ongoing', sub: 'Build a little every month, all four years', subjects: [
+{ id: 'aptitude', name: 'General Aptitude',
+materials: ['Any standard quant + verbal practice set'],
+topics: ['Verbal ability', 'Numerical ability', 'Data interpretation', 'Logical reasoning'] }
 ]},
-{ phase: 'Year 4', sub: 'Data & networks', subjects: [
-{ id: 'dbms', name: 'Databases',
-materials: ['Silberschatz, Korth, Sudarshan — Database System Concepts', 'Elmasri & Navathe — Fundamentals of Database Systems'],
-topics: ['ER model & relational model', 'SQL', 'Normalization', 'Transactions & concurrency control', 'Indexing & query processing'] },
-{ id: 'cn', name: 'Computer Networks',
-materials: ['Kurose & Ross — Computer Networking: A Top-Down Approach', 'Andrew Tanenbaum — Computer Networks'],
-topics: ['Layering & OSI/TCP-IP model', 'Data link layer & MAC', 'Routing algorithms', 'Transport layer (TCP/UDP)', 'Application layer protocols'] }
-]},
-{ phase: 'Year 4 (final)', sub: 'Consolidation, not new learning', subjects: [
+{ phase: 'Year 4', sub: 'Consolidation, not new learning', subjects: [
 { id: 'consolidation', name: 'Final Revision & Practice',
-materials: ['15–20 years of GATE CS PYQs', 'Full-length timed mock tests'],
-topics: ['Full-syllabus revision pass', 'Timed subject-wise PYQ sets', 'Full-length mock tests', 'Targeted revision of weak areas'] }
+materials: ['15–20 years of GATE EC PYQs', 'Full-length timed mock tests'],
+topics: ['Full-syllabus revision pass', 'Subject-wise PYQs (2005–present)', 'Full-length mock tests', 'Weak-area targeted revision'] }
 ]}
 ];
 const GATE_SUBJECTS = GATE_PHASES.flatMap(p => p.subjects);
